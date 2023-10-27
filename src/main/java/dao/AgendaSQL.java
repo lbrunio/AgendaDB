@@ -274,7 +274,18 @@ public class AgendaSQL {
 		return false;
 	}
 	
-	public void drop() {
+	public void dropEmpleado() {
+		String sql = "DELETE FROM Empleado AND Departamento";
+		
+		try {
+			Statement stmt = (Statement) connector.createStatement();
+			stmt.executeUpdate(sql);
+		} catch (SQLException e) {
+			// TODO: handle exception
+		}
+	}
+	
+	public void dropDepartamanto() {
 		String sql = "DELETE FROM Empleado AND Departamento";
 		
 		try {
