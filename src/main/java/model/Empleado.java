@@ -19,10 +19,13 @@ public class Empleado {
 	
 	
 	public Empleado(String nombre, double salario, Departamento departamento) {
-		this.id = id;
 		this.nombre = nombre;
 		this.salario = salario;
 		this.departamento = departamento;
+	}
+	
+	public Empleado() {
+		
 	}
 
 
@@ -40,10 +43,10 @@ public class Empleado {
 		return salario;
 	}
 
-
 	public Departamento getDepartamento() {
 		return departamento;
 	}
+
 
 
 	@Override
@@ -51,10 +54,11 @@ public class Empleado {
 		return "Empleado [id=" + id + ", nombre=" + nombre + ", salario=" + salario + ", departamento=" + departamento
 				+ "]";
 	}
-	
-	
-	
-	
+
+	public void setId(Integer id) {
+		this.id = id;
+		
+	}
 	
 
 	

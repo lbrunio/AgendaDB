@@ -16,9 +16,12 @@ public class Departamento {
 	
 	
 	public Departamento(String nombre, Empleado jefe) {
-		this.id = id;
 		this.nombre = nombre;
 		this.jefe = jefe;
+	}
+	
+	public Departamento() {
+		
 	}
 
 
@@ -35,13 +38,17 @@ public class Departamento {
 	public Empleado getJefe() {
 		return jefe;
 	}
-
+	
 
 	@Override
 	public String toString() {
 		return "Departamento [id=" + id + ", nombre=" + nombre + ", jefe=" + jefe + "]";
 	}
-	
-	
-	
+
+	public void setId(Integer id) {
+		this.id = id;
+		
+	}
+
+
 }

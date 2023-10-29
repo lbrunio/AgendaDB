@@ -11,7 +11,7 @@ public class Database {
 
 	private static Connection connector = null;
 
-	private static String typeDB = null;
+	public static String typeDB = null;
 
 	private Database() {
 		try {
