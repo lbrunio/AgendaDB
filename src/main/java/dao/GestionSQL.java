@@ -36,7 +36,7 @@ public class GestionSQL {
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return "";
 	}
@@ -57,7 +57,7 @@ public class GestionSQL {
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	       
 	    }
 	    return "";
 	}
@@ -77,7 +77,7 @@ public class GestionSQL {
 	            return readDepartamento(rs);
 	        }
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return null;
 	}
@@ -98,74 +98,61 @@ public class GestionSQL {
 	            return readEmpleado(rs);
 	        }
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return null;
 	}
 	
 	public boolean add(Departamento departamento) {
 	    String sql = """
-	            INSERT INTO Departamento (nombre, jefe)
-	            VALUES (?, ?)
+	            INSERT INTO Departamento (nombre)
+	            VALUES (?)
 	            """;
 	    try {
-	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	        PreparedStatement ps = conn.prepareStatement(sql);
 	        ps.setString(1, departamento.getNombre());
+	        return ps.executeUpdate() > 0;
 	        
-	        // Si el departamento tiene un jefe, establece el ID del jefe existente.
-	        if (departamento.getJefe() != null) {
-	            ps.setInt(2, departamento.getJefe().getId());
-	        } else {
-	            ps.setNull(2, java.sql.Types.INTEGER);
-	        }
-	        
-	        int rowsAffected = ps.executeUpdate();
-
-	        if (rowsAffected > 0) {
-	            ResultSet generatedKeys = ps.getGeneratedKeys();
-	            if (generatedKeys.next()) {
-	                int generatedDepartamentoId = generatedKeys.getInt(1);
-	                departamento.setId(generatedDepartamentoId);
-	                return true;
-	            }
-	        }
+	     
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	      
 	    }
 	    return false;
 	}
+	
+	public Departamento buscarPorCodigo(Integer id) {
+		String sql = """
+				SELECT id_dep
+				FROM Departamento
+				WHERE id_dep = ?
+				""";
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return readDepartamento(rs);
+			}
+		} catch (SQLException e) {
+		}
+		return null;
+	}
+
 
 
 	public boolean add(Empleado empleado) {
 	    String sql = """
-	            INSERT INTO Empleado (nombre, salario, departamento)
-	            VALUES (?, ?, ?)
+	            INSERT INTO Empleado (nombre, salario)
+	            VALUES (?, ?)
 	            """;
 	    try {
-	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	        PreparedStatement ps = conn.prepareStatement(sql);
 	        ps.setString(1, empleado.getNombre());
 	        ps.setDouble(2, empleado.getSalario());
 
-	        // Si el empleado tiene un departamento, establece el ID del departamento existente.
-	        if (empleado.getDepartamento() != null) {
-	            ps.setInt(3, empleado.getDepartamento().getId());
-	        } else {
-	            // Si el empleado no tiene departamento, establece el campo como NULL.
-	            ps.setNull(3, java.sql.Types.INTEGER);
-	        }
-
-	        int rowsAffected = ps.executeUpdate();
-
-	        if (rowsAffected > 0) {
-	            ResultSet generatedKeys = ps.getGeneratedKeys();
-	            if (generatedKeys.next()) {
-	                int generatedEmpleadoId = generatedKeys.getInt(1);
-	                empleado.setId(generatedEmpleadoId);
-	                return true;
-	            }
-	        }
+	        return ps.executeUpdate() > 0;
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	       
 	    }
 	    return false;
 	}
@@ -200,7 +187,7 @@ public class GestionSQL {
 //	        return ps.executeUpdate() > 0;
 //	       
 //	    } catch (SQLException e) {
-//	        // Manejar la excepción aquí
+//	        
 //	    }
 //	    return false;
 //	}
@@ -238,7 +225,7 @@ public class GestionSQL {
 	        ps.setInt(2, departamento.getId());
 	        return ps.executeUpdate() > 0;
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return false;
 	}
@@ -282,7 +269,7 @@ public class GestionSQL {
 	public boolean deleteEmpleado(Integer id) {
 		String sql = """
 				DELETE FROM Empleado
-				WHERE id_emple = ?
+				WHERE id_emple = ?;
 				""";
 		try {
 			PreparedStatement ps = conn.prepareStatement(sql);
@@ -331,7 +318,7 @@ public class GestionSQL {
 	        Departamento departamento = new Departamento(nombre, jefe);
 	        return departamento;
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return null;
 	}
@@ -351,7 +338,7 @@ public class GestionSQL {
 	        Empleado empleado = new Empleado(nombre, salario, departamento);
 	        return empleado;
 	    } catch (SQLException e) {
-	        // Manejar la excepción aquí
+	        
 	    }
 	    return null;
 	}
@@ -403,6 +390,13 @@ public class GestionSQL {
 			conn.createStatement().executeUpdate(sql);
 		} catch (SQLException e) {
 		}
+	}
+	
+	public void insertEmpleValues() {
+		String sql = """
+	            INSERT INTO Empleado (nombre, salario, departamento)
+	            VALUES (?, ?, ?)
+	            """;
 	}
 
 }
