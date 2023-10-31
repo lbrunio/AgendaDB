@@ -101,6 +101,25 @@ public class GestionSQL {
 	        
 	    }
 	    return null;
+	 }
+	
+	// Idea original del add, va ser igual que addDepartamento
+	public boolean add(Empleado empleado, Departamento d) {
+	    String sql = """
+	            INSERT INTO Empleado (nombre, salario)
+	            VALUES (?, ?. ?)
+	            """;
+	    try {
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setString(1, empleado.getNombre());
+	        ps.setDouble(2, empleado.getSalario());
+	        ps.setInt(3, d.getId());
+
+	        return ps.executeUpdate() > 0;
+	    } catch (SQLException e) {
+	       
+	    }
+	    return false;
 	}
 	
 	public boolean add(Departamento departamento) {
@@ -140,23 +159,29 @@ public class GestionSQL {
 
 
 
-	public boolean add(Empleado empleado) {
-	    String sql = """
-	            INSERT INTO Empleado (nombre, salario)
-	            VALUES (?, ?)
-	            """;
-	    try {
-	        PreparedStatement ps = conn.prepareStatement(sql);
-	        ps.setString(1, empleado.getNombre());
-	        ps.setDouble(2, empleado.getSalario());
 
-	        return ps.executeUpdate() > 0;
-	    } catch (SQLException e) {
-	       
-	    }
-	    return false;
-	}
 
+	// Diferentes ideas del add
+//	public boolean add(Empleado empleado, Departamento d) {
+//		String sql = """
+//				INSERT INTO Empleado (nombre, salario)
+//				VALUES (?, ?)
+//				""";
+//		try {
+//			PreparedStatement ps = conn.prepareStatement(sql);
+//			ps.setString(1, empleado.getNombre());
+//			ps.setDouble(2, empleado.getSalario());
+//			if (d != null) {
+//				ps.setInt(3, d.getId());
+//			} else {
+//				ps.setNull(3, java.sql.Types.INTEGER);
+//			}
+//
+//			return ps.executeUpdate() > 0;
+//		} catch (SQLException e) {
+//		}
+//		return false;
+//	}
 	
 //	public boolean add(Empleado empleado) {
 //	    String sql = """
