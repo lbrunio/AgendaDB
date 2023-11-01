@@ -12,30 +12,44 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Empleado {
-	private Integer id;
-	public String nombre;
+	private Integer idEmple;
+	public String nombreEmple;
 	private Double salario;
 	private Departamento departamento;
 	
 	
 	public Empleado(String nombre, double salario, Departamento departamento) {
-		this.nombre = nombre;
+		this.nombreEmple = nombre;
 		this.salario = salario;
 		this.departamento = departamento;
 	}
 	
-	public Empleado() {
-		
+	
+
+
+	public Empleado(Integer idEmpleado, String nombre, Double salario2, Departamento departamento) {
+		this.idEmple = idEmpleado;
+		this.nombreEmple = nombre;
+		this.salario = salario;
+		this.departamento = departamento;
 	}
 
 
+
+
+	public Empleado() {
+	}
+
+
+
+
 	public Integer getId() {
-		return id;
+		return idEmple;
 	}
 
 
 	public String getNombre() {
-		return nombre;
+		return nombreEmple;
 	}
 
 
@@ -51,12 +65,43 @@ public class Empleado {
 
 	@Override
 	public String toString() {
-		return "Empleado [id=" + id + ", nombre=" + nombre + ", salario=" + salario + ", departamento=" + departamento
+		return "Empleado [id=" + idEmple + ", nombre=" + nombreEmple + ", salario=" + salario + ", departamento=" + departamento
 				+ "]";
 	}
+	
+	
+	
+
+	public String getNombreEmple() {
+		return nombreEmple;
+	}
+
+
+
+
+	public void setNombreEmple(String nombreEmple) {
+		this.nombreEmple = nombreEmple;
+	}
+
+
+
+
+	public void setSalario(Double salario) {
+		this.salario = salario;
+	}
+
+
+
+
+	public void setDepartamento(Departamento departamento) {
+		this.departamento = departamento;
+	}
+
+
+
 
 	public void setId(Integer id) {
-		this.id = id;
+		this.idEmple = id;
 		
 	}
 	

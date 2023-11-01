@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Departamento {
 	
-	private Integer id;
-	private String nombre;
+	private Integer idDep;
+	private String nombreDep;
 	private Empleado jefe;
 	
 	
 	public Departamento(String nombre, Empleado jefe) {
-		this.nombre = nombre;
+		this.nombreDep = nombre;
 		this.jefe = jefe;
 	}
 	
@@ -25,13 +25,19 @@ public class Departamento {
 	}
 
 
+	public Departamento(Integer idDepartamento, String nombre, Empleado jefe) {
+		this.idDep = idDepartamento;
+		this.nombreDep = nombre;
+		this.jefe = jefe;
+	}
+
 	public Integer getId() {
-		return id;
+		return idDep;
 	}
 
 
 	public String getNombre() {
-		return nombre;
+		return nombreDep;
 	}
 
 
@@ -42,11 +48,11 @@ public class Departamento {
 
 	@Override
 	public String toString() {
-		return "Departamento [id=" + id + ", nombre=" + nombre + ", jefe=" + jefe + "]";
+		return "Departamento [id=" + idDep + ", nombre=" + nombreDep + ", jefe=" + jefe + "]";
 	}
 
 	public void setId(Integer id) {
-		this.id = id;
+		this.idDep = id;
 		
 	}
 

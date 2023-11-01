@@ -23,43 +23,101 @@ public class GestionSQL {
 	
 	public String showDepartamento() {
 	    String sql = """
-	            SELECT id, nombre, jefe
+	            SELECT id_dep, nombre
 	            FROM Departamento
 	            """;
+	    
 	    try {
-	        StringBuffer sb = new StringBuffer();
+	        StringBuilder sb = new StringBuilder();
 	        ResultSet rs = conn.createStatement().executeQuery(sql);
 	        while (rs.next()) {
-	            Departamento departamento = readDepartamento(rs);
-	            sb.append(departamento.toString());
+	            int idDepartamento = rs.getInt("id_dep");
+	            String nombreDepartamento = rs.getString("nombre");
+	            String nombreJefe = obtenerNombreJefe(idDepartamento);
+
+	            sb.append("ID: ").append(idDepartamento)
+	              .append(", Nombre Departamento: ").append(nombreDepartamento);
+	              
+	            if (nombreJefe != null) {
+	                sb.append(", Jefe: ").append(nombreJefe);
+	            }
+	            
 	            sb.append("\n");
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	        
+	        // Manejar la excepción adecuadamente
+	        e.printStackTrace();
+	        // También podrías devolver un mensaje de error o lanzar una excepción para manejarla en otro lugar
 	    }
 	    return "";
 	}
 
+	private String obtenerNombreJefe(int idDepartamento) {
+	    String sql = "SELECT E.nombre FROM Empleado E WHERE E.id_emple = (SELECT jefe FROM Departamento WHERE id_dep = ?)";
+	    try {
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setInt(1, idDepartamento);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next()) {
+	            return rs.getString("nombre");
+	        }
+	    } catch (SQLException e) {
+	        // Manejar la excepción adecuadamente
+	        e.printStackTrace();
+	    }
+	    return null;
+	}
+
+
 	
 	public String showEmpleado() {
 	    String sql = """
-	            SELECT id, nombre, salario, departamento
+	            SELECT id_emple, nombre, salario, departamento
 	            FROM Empleado
 	            """;
+	    
 	    try {
-	        StringBuffer sb = new StringBuffer();
+	        StringBuilder sb = new StringBuilder();
 	        ResultSet rs = conn.createStatement().executeQuery(sql);
 	        while (rs.next()) {
-	            Empleado empleado = readEmpleado(rs);
-	            sb.append(empleado.toString());
-	            sb.append("\n");
+	            int idEmpleado = rs.getInt("id_emple");
+	            String nombre = rs.getString("nombre");
+	            double salario = rs.getDouble("salario");
+	            int idDepartamento = rs.getInt("departamento");
+
+	            // Obtener el nombre del departamento a través de una función separada
+	            String nombreDepartamento = obtenerNombreDepartamento(idDepartamento);
+
+	            sb.append("ID: ").append(idEmpleado)
+	              .append(", Nombre: ").append(nombre)
+	              .append(", Salario: ").append(salario)
+	              .append(", Departamento: ").append(nombreDepartamento)
+	              .append("\n");
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	       
+	        // Manejar la excepción adecuadamente, por ejemplo, registrándola o notificándola
+	        e.printStackTrace();
+	        // También podrías devolver un mensaje de error o lanzar una excepción para manejarla en otro lugar
 	    }
 	    return "";
+	}
+	
+	private String obtenerNombreDepartamento(int idDepartamento) {
+	    String sql = "SELECT nombre FROM Departamento WHERE id_dep = ?";
+	    try {
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setInt(1, idDepartamento);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next()) {
+	        	return rs.getString("nombre");
+	        }
+	    } catch (SQLException e) {
+	        // Manejar la excepción adecuadamente
+	        e.printStackTrace();
+	    }
+	    return "Departamento no encontrado";
 	}
 
 	
@@ -103,24 +161,54 @@ public class GestionSQL {
 	    return null;
 	 }
 	
-	// Idea original del add, va ser igual que addDepartamento
-	public boolean add(Empleado empleado, Departamento d) {
+	
+	public boolean add(Empleado empleado) {
 	    String sql = """
 	            INSERT INTO Empleado (nombre, salario)
-	            VALUES (?, ?. ?)
+	            VALUES (?, ?)
 	            """;
 	    try {
-	        PreparedStatement ps = conn.prepareStatement(sql);
+	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 	        ps.setString(1, empleado.getNombre());
 	        ps.setDouble(2, empleado.getSalario());
-	        ps.setInt(3, d.getId());
-
-	        return ps.executeUpdate() > 0;
+	        
+	        if (ps.executeUpdate() > 0) {
+	            ResultSet generatedKeys = ps.getGeneratedKeys();
+	            if (generatedKeys.next()) {
+	                empleado.setId(generatedKeys.getInt(1));
+	            }
+	            return true;
+	        }
+	    } catch (SQLException e) {
+	     
+	    }
+	    return false;
+	}
+	
+	public boolean add(Empleado empleado, Integer idDepartamento) {
+	    String sql = """
+	            INSERT INTO Empleado (nombre, salario, departamento)
+	            VALUES (?, ?, ?)
+	            """;
+	    try {
+	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+	        ps.setString(1, empleado.getNombre());
+	        ps.setDouble(2, empleado.getSalario());
+	        ps.setInt(3, idDepartamento);
+	        if (ps.executeUpdate() > 0) {
+	            ResultSet generatedKeys = ps.getGeneratedKeys();
+	            if (generatedKeys.next()) {
+	                empleado.setId(generatedKeys.getInt(1));
+	            }
+	            return true;
+	        }
 	    } catch (SQLException e) {
 	       
 	    }
 	    return false;
 	}
+
+
 	
 	public boolean add(Departamento departamento) {
 	    String sql = """
@@ -130,6 +218,13 @@ public class GestionSQL {
 	    try {
 	        PreparedStatement ps = conn.prepareStatement(sql);
 	        ps.setString(1, departamento.getNombre());
+	        if (ps.executeUpdate() > 0) {
+	            ResultSet generatedKeys = ps.getGeneratedKeys();
+	            if (generatedKeys.next()) {
+	                departamento.setId(generatedKeys.getInt(1));
+	            }
+	            
+	        }
 	        return ps.executeUpdate() > 0;
 	        
 	     
@@ -139,7 +234,25 @@ public class GestionSQL {
 	    return false;
 	}
 	
-	public Departamento buscarPorCodigo(Integer id) {
+	public Empleado buscarPorCodigoEmple(Integer id) {
+		String sql = """
+				SELECT id_emple, nombre, salario, departamento
+				FROM Empleado
+				WHERE id_emple = ?
+				""";
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return readEmpleado(rs);
+			}
+		} catch (SQLException e) {
+		}
+		return null;
+	}
+	
+	public Departamento buscarPorCodigoDep(Integer id) {
 		String sql = """
 				SELECT id_dep
 				FROM Departamento
@@ -159,85 +272,6 @@ public class GestionSQL {
 
 
 
-
-
-	// Diferentes ideas del add
-//	public boolean add(Empleado empleado, Departamento d) {
-//		String sql = """
-//				INSERT INTO Empleado (nombre, salario)
-//				VALUES (?, ?)
-//				""";
-//		try {
-//			PreparedStatement ps = conn.prepareStatement(sql);
-//			ps.setString(1, empleado.getNombre());
-//			ps.setDouble(2, empleado.getSalario());
-//			if (d != null) {
-//				ps.setInt(3, d.getId());
-//			} else {
-//				ps.setNull(3, java.sql.Types.INTEGER);
-//			}
-//
-//			return ps.executeUpdate() > 0;
-//		} catch (SQLException e) {
-//		}
-//		return false;
-//	}
-	
-//	public boolean add(Empleado empleado) {
-//	    String sql = """
-//	            INSERT INTO Empleado (nombre, salario)
-//	            VALUES (?, ?)
-//	            """;
-//	    try {
-//	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-//	        ps.setString(1, empleado.getNombre());
-//	        ps.setDouble(2, empleado.getSalario());
-//	        
-//	        return ps.executeUpdate() > 0;
-//	    } catch (SQLException e) {
-//	       
-//	    }
-//	    return false;
-//	}
-
-//	public boolean add(Departamento departamento) {
-//	    String sql = """
-//	            INSERT INTO Departamento (nombre)
-//	            VALUES (?)
-//	            """;
-//	    try {
-//	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-//	        ps.setString(1, departamento.getNombre());
-//	        
-//	        return ps.executeUpdate() > 0;
-//	       
-//	    } catch (SQLException e) {
-//	        
-//	    }
-//	    return false;
-//	}
-
-	
-	
-	
-//	public boolean add(Empleado empleado) {
-//	    String sql = """
-//	            INSERT INTO Empleado (nombre, salario)
-//	            VALUES (?, ?)
-//	            """;
-//	    try {
-//	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-//	        ps.setString(1, empleado.getNombre());
-//	        ps.setDouble(2, empleado.getSalario());
-//	        return ps.executeUpdate() > 0;
-//	        
-//	    } catch (SQLException e) {
-//	    }
-//	    return false;
-//	}
-
-
-	
 	public boolean update(Departamento departamento) {
 	    String sql = """
 	            UPDATE Departamento
@@ -257,17 +291,18 @@ public class GestionSQL {
 
 	
 	
-	public boolean update(Empleado empleado) {
+	public boolean update(Empleado empleado, Departamento d) {
 	    String sql = """
 	            UPDATE Empleado
-	            SET nombre = ?, salario = ?
+	            SET nombre = ?, salario = ?, departamento = ?
 	            WHERE id = ?
 	            """;
 	    try {
 	        PreparedStatement ps = conn.prepareStatement(sql);
 	        ps.setString(1, empleado.getNombre());
 	        ps.setDouble(2, empleado.getSalario());
-	        ps.setInt(3, empleado.getId());
+	        ps.setNull(3, d.getId());
+	        ps.setInt(4, empleado.getId());
 	        return ps.executeUpdate() > 0;
 	    } catch (SQLException e) {
 	    }
@@ -309,7 +344,7 @@ public class GestionSQL {
 	
 	public void dropDepartamento() {
 		String sql = """
-				DELETE FROM Departamento
+				DROP TABLE Departamento;
 				""";
 		try {
 			Statement stmt = conn.createStatement();
@@ -321,7 +356,7 @@ public class GestionSQL {
 	
 	public void dropEmpleado() {
 		String sql = """
-				DELETE FROM Empleado
+				DROP TABLE Empleado;
 				""";
 		try {
 			Statement stmt = conn.createStatement();
@@ -333,40 +368,32 @@ public class GestionSQL {
 	
 	private Departamento readDepartamento(ResultSet rs) {
 	    try {
-	        Integer id = rs.getInt("id");
+	        int idDepartamento = rs.getInt("id_departamento");
 	        String nombre = rs.getString("nombre");
-	        Integer jefeId = rs.getInt("jefe");
-
-	        Empleado jefe = new Empleado();
-	        jefe.setId(jefeId);
-
-	        Departamento departamento = new Departamento(nombre, jefe);
-	        return departamento;
+	        int idJefe = rs.getInt("id_jefe"); // Asumiendo que el campo en la tabla es id_jefe
+	        Empleado jefe = new Empleado(); // Deberás recuperar el jefe de la base de datos
+	        return new Departamento(idDepartamento, nombre, jefe);
 	    } catch (SQLException e) {
-	        
+	        // Maneja la excepción adecuadamente
 	    }
 	    return null;
 	}
 
-	
-	
 	private Empleado readEmpleado(ResultSet rs) {
 	    try {
-	        Integer id = rs.getInt("id");
+	        int idEmpleado = rs.getInt("id_emple");
 	        String nombre = rs.getString("nombre");
 	        Double salario = rs.getDouble("salario");
-	        Integer departamentoId = rs.getInt("departamento");
-
-	        Departamento departamento = new Departamento();
-	        departamento.setId(departamentoId);
-
-	        Empleado empleado = new Empleado(nombre, salario, departamento);
-	        return empleado;
+	        int idDepartamento = rs.getInt("departamento");
+	        // Puedes agregar más atributos según la estructura de tu tabla Empleado
+	        Departamento departamento = new Departamento(); // Deberás recuperar el departamento de la base de datos
+	        return new Empleado(idEmpleado, nombre, salario, departamento);
 	    } catch (SQLException e) {
-	        
+	        // Maneja la excepción adecuadamente
 	    }
 	    return null;
 	}
+
 
 	
 	

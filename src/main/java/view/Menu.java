@@ -22,16 +22,15 @@ public class Menu {
 		String yn;
 		Integer id;
 		boolean loop = true;
-		
 
-	   
-		
-		
+//		gestion.dropEmpleado();
+//		gestion.dropDepartamento();
+//		System.exit(0);
+
 		// Lista de los empleados y departamentos
 		List<Departamento> departamentos = new ArrayList<Departamento>();
 		List<Empleado> empleados = new ArrayList<Empleado>();
-		
-		
+
 		// Departamentos por defecto sin jefes
 		Departamento marketing = new Departamento("Marketing", null);
 		Departamento humanos = new Departamento("Humanos", null);
@@ -41,14 +40,16 @@ public class Menu {
 		Empleado e1 = new Empleado("A", 10, marketing);
 		Empleado e2 = new Empleado("B", 11, humanos);
 		Empleado e3 = new Empleado("C", 12, ventas);
-		
-		// Add empleado y departamento en las listas 
-		
+
+		departamentos.add(ventas);
+		departamentos.add(humanos);
+		departamentos.add(marketing);
+
+		// Add empleado y departamento en las listas
+
 		// Departamentos con jefes
 		ventas = new Departamento("Ventas", e3);
-		
-		
-		
+
 		while (loop) {
 			opcion = menu();
 			switch (opcion) {
@@ -56,15 +57,15 @@ public class Menu {
 				opEmple = menuEmple();
 				switch (opEmple) {
 				case 1:
-					addEmpleado(gestion);
+					addEmpleado(gestion, departamentos);
 					break;
-					
+
 				case 2:
 					mostrar(gestion);
-					
-					
+					break;
 
-				
+				case 3:
+					updateEmpleado(gestion);
 					break;
 				default:
 					throw new IllegalArgumentException("Unexpected value: " + opEmple);
@@ -73,6 +74,8 @@ public class Menu {
 			case 2:
 				opDep = menuDep();
 				break;
+				
+				
 
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + opcion);
@@ -81,28 +84,93 @@ public class Menu {
 
 	}
 
+	private static void updateEmpleado(GestionSQL gestion) {
+		System.out.println("Introduce el id del empleado: ");
+		Integer idEmpleado = IO.readInt();
+		Empleado e = gestion.buscarPorCodigoEmple(idEmpleado);
 
+		System.out.println("Cambiar el nombre " + e.getNombre() + " por? ");
+		String updateNombre = IO.readString();
+		if (!updateNombre.isBlank()) {
+			e.setNombreEmple(updateNombre);
+		}
 
+		System.out.println("Cambiar el salario por? ");
+		Double updateSalario = IO.readDouble();
 
-
-	private static void addEmpleado(GestionSQL gestion) {
+		if (!updateSalario.isNaN()) {
+			e.setSalario(updateSalario);
+		}
 		
-		boolean added = false;
+//		e.setDepartamento(null);
+//		boolean added = gestion.update(e);
+		
+//		System.out.println(added ? "Added" : "Not added");
+
+		System.out.println("Asignar a un nuevo departamento ? Y/N ");
+		String yn = IO.readString();
+
+		if (yn.equalsIgnoreCase("y")) {
+			System.out.println("Introduce el nombre del departamento: ");
+			String nombreDep = IO.readString();
+			
+			System.out.println("Asignarlo como jefe? Y/N ");
+			yn = IO.readString();
+			if (yn.equalsIgnoreCase("y")) {
+				Departamento d = new Departamento(nombreDep, e);
+				
+				boolean added = gestion.add(d);
+				
+				System.out.println(added ? "departamento added" : "not added");
+				
+				
+				e.setDepartamento(d);
+				
+				added = gestion.update(e, d);
+				
+				System.out.println(added ? "empleado updated" : "not updated");
+			
+			}
+		} else {
+			System.out.println("Introduce el id del departamento: ");
+			Integer idDep = IO.readInt();
+			Departamento d1 = gestion.buscarDepartamento(idDep);
+			
+			e.setDepartamento(d1);
+			
+			
+		}
+	}
+
+	private static void addEmpleado(GestionSQL gestion, List<Departamento> departamentos) {
 		System.out.println("Introduce nombre empleado: ");
 		String nombre = IO.readString();
 
 		System.out.println("Salario del empleado: ");
 		Double salario = IO.readDouble();
 
-		added = gestion.add(new Empleado(nombre, salario, null));
-		
-		System.out.println(added ? "added" : "Not added");
+		System.out.println("Add to existing Departamento ? ");
+		String yn = IO.readString();
+
+		if (yn.equalsIgnoreCase("Y")) {
+			System.out.println("Introduce el id del departamento");
+			Integer idDep = IO.readInt();
+			boolean found = false;
+			for (Departamento departamento : departamentos) {
+				if (departamento.getId() == idDep) {
+					gestion.add(new Empleado(nombre, salario, departamento));
+					found = true;
+					break; // Salir del bucle una vez que se ha encontrado el departamento
+				}
+			}
+			if (!found) {
+				gestion.add(new Empleado(nombre, salario, null));
+			}
+		} else {
+			gestion.add(new Empleado(nombre, salario, null));
+		}
 	}
-	
 
-
-	
-	
 	private static void mostrar(GestionSQL gestion) {
 		System.out.println(gestion.showEmpleado());
 	}
