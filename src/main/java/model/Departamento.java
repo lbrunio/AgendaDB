@@ -56,5 +56,19 @@ public class Departamento {
 		
 	}
 
+	public String getNombreDep() {
+		return nombreDep;
+	}
+
+	public void setNombreDep(String nombreDep) {
+		this.nombreDep = nombreDep;
+	}
+
+	public void setJefe(Empleado jefe) {
+		this.jefe = jefe;
+	}
+	
+	
+
 
 }

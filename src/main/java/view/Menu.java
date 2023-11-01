@@ -1,14 +1,6 @@
 package view;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
+
 
 import dao.GestionSQL;
 import io.IO;
@@ -19,36 +11,22 @@ public class Menu {
 	public static void main(String[] args) {
 		GestionSQL gestion = new GestionSQL();
 		int opcion, opEmple, opDep;
-		String yn;
-		Integer id;
+		
 		boolean loop = true;
 
 //		gestion.dropEmpleado();
 //		gestion.dropDepartamento();
 //		System.exit(0);
+//		
+//		gestion.insertDepValues();
+//		gestion.insertDepValues1();
+//		gestion.insertDepValues2();
+//		gestion.insertEmpleValues();
+//		gestion.insertEmpleValues1();
+//		gestion.insertEmpleValues2();
+//		System.exit(0);
 
-		// Lista de los empleados y departamentos
-		List<Departamento> departamentos = new ArrayList<Departamento>();
-		List<Empleado> empleados = new ArrayList<Empleado>();
-
-		// Departamentos por defecto sin jefes
-		Departamento marketing = new Departamento("Marketing", null);
-		Departamento humanos = new Departamento("Humanos", null);
-		Departamento ventas = new Departamento("Ventas", null);
-
-		// Empleados por defecto sin departamentos
-		Empleado e1 = new Empleado("A", 10, marketing);
-		Empleado e2 = new Empleado("B", 11, humanos);
-		Empleado e3 = new Empleado("C", 12, ventas);
-
-		departamentos.add(ventas);
-		departamentos.add(humanos);
-		departamentos.add(marketing);
-
-		// Add empleado y departamento en las listas
-
-		// Departamentos con jefes
-		ventas = new Departamento("Ventas", e3);
+	
 
 		while (loop) {
 			opcion = menu();
@@ -61,21 +39,50 @@ public class Menu {
 					break;
 
 				case 2:
-					mostrar(gestion);
+					mostrarEmpleado(gestion);
 					break;
 
 				case 3:
 					updateEmpleado(gestion);
 					break;
+					
+				case 4:
+					deleteEmpleado(gestion);
+					break;
+					
+				case 5:
+					break;
+					
 				default:
-					throw new IllegalArgumentException("Unexpected value: " + opEmple);
+					System.err.println("Opcion invalida");
+					break;
 				}
-
+				break;
+				
+				
 			case 2:
 				opDep = menuDep();
 				switch(opDep) {
+				case 1:
+					addDepartamento(gestion);
+					break;
 				case 2:
 					mostrarDepartamentos(gestion);
+					break;
+					
+				case 3:
+					updateDepartamento(gestion);
+					break;
+					
+				case 4:
+					deleteDepartamento(gestion);
+					break;
+				
+				case 5:
+					break;
+				
+				default:
+					System.err.println("Opcion invalida");
 					break;
 				}
 				break;
@@ -83,21 +90,123 @@ public class Menu {
 				
 
 			default:
-				throw new IllegalArgumentException("Unexpected value: " + opcion);
+				System.err.println("Opcion invalida");
+				break;
 			}
 		}
 
 	}
-	
-	
+
+	/**
+	 * 1: Add departamento 2: Mostrar departamentos 3: Modificar departamento 4:
+	 * Borrar departamento 5: Salir
+	 * 
+	 */
+	// -------------------------- Departamento ---------------------------------
+	private static void deleteDepartamento(GestionSQL gestion) {
+		System.out.println("Introduce el id del departamento que quiere borrar: ");
+		Integer idDep = IO.readInt();
+
+		Departamento d = gestion.buscarDepartamento(idDep);
+
+		System.out.println("Seguro que quiere borrar el departamento " + d.toString());
+		String yn = IO.readString();
+
+		if (yn.equalsIgnoreCase("y")) {
+			boolean deleted = gestion.deleteDepartamento(idDep);
+			System.out.println(deleted ? "Departamento deleted" : "Departamento not deleted");
+		}
+	}
+
+	private static void updateDepartamento(GestionSQL gestion) {
+		boolean updated = false;
+		System.out.println("Introduce el id del departmanto que quiere actualizar: ");
+		Integer idDep = IO.readInt();
+
+		Departamento d = gestion.buscarDepartamento(idDep);
+
+		System.out.println("Cambiar el nombre " + d.getNombre() + " a ?: ");
+		String nombreDepUpdate = IO.readString();
+
+		if (!nombreDepUpdate.isBlank()) {
+			d.setNombreDep(nombreDepUpdate);
+		}
+
+		System.out.println("Update jefe? Y/N");
+		String yn = IO.readString();
+
+		Integer idEmple = d.getJefe().getId();
+
+		Empleado e = gestion.buscarEmpleado(idEmple);
+
+		if (yn.equalsIgnoreCase("y")) {
+
+			System.out.println("Cambiar el jefe " + e.getNombre() + " a ?: ");
+			System.out.println("Nombre empleado: ");
+			String nombreEmpleUpdate = IO.readString();
+
+			if (!nombreEmpleUpdate.isBlank()) {
+				e.setNombreEmple(nombreEmpleUpdate);
+			}
+
+			System.out.println("Salario: ");
+			Double salarioUpdate = IO.readDouble();
+
+			if (!salarioUpdate.isNaN()) {
+				e.setSalario(salarioUpdate);
+			}
+
+			updated = gestion.update(d, e);
+		} else {
+			updated = gestion.update(d, e);
+		}
+
+		System.out.println(updated ? "Departamento updated" : "Departamento not updated");
+
+	}
+
+	private static void addDepartamento(GestionSQL gestion) {
+		System.out.println("Introduce el nombre del departamento: ");
+		String nombreDep = IO.readString();
+
+		System.out.println("Add existing Empleado as Jefe? Y/N");
+		String yn = IO.readString();
+
+		if (yn.equalsIgnoreCase("y")) {
+			System.out.println("Introduce el id del empleado: ");
+			Integer idEmple = IO.readInt();
+
+			Empleado e = gestion.buscarEmpleado(idEmple);
+			boolean added = gestion.add(new Departamento(nombreDep, e), e);
+
+			System.out.println(added ? "Departamento added" : "Departamento not added");
+		} else {
+			boolean added = gestion.add(new Departamento(nombreDep, null), null);
+			System.out.println(added ? "Departamento added" : "Departamento not added");
+		}
+	}
+
 	private static void mostrarDepartamentos(GestionSQL gestion) {
 		System.out.println(gestion.showDepartamento());
+	}
+
+	// -------------------------- Departamento ---------------------------------
+
+	// -------------------------- Empleado -------------------------------------
+	private static void deleteEmpleado(GestionSQL gestion) {
+		System.out.println("Introduce el ID del empleado que quiere borrar: ");
+		Integer idEmple = IO.readInt();
+
+		boolean deleted = gestion.deleteEmpleado(idEmple);
+
+		System.out.println(deleted ? "Empleado deleted" : "Empleado not deleted");
 	}
 
 	private static void updateEmpleado(GestionSQL gestion) {
 		System.out.println("Introduce el id del empleado: ");
 		Integer idEmpleado = IO.readInt();
 		Empleado e = gestion.buscarEmpleado(idEmpleado);
+		
 
 		System.out.println("Cambiar el nombre " + e.getNombre() + " por? ");
 		String updateNombre = IO.readString();
@@ -111,7 +220,6 @@ public class Menu {
 		if (!updateSalario.isNaN()) {
 			e.setSalario(updateSalario);
 		}
-	
 
 		System.out.println("Asignar a un nuevo departamento ? Y/N ");
 		String yn = IO.readString();
@@ -119,43 +227,44 @@ public class Menu {
 		if (yn.equalsIgnoreCase("y")) {
 			System.out.println("Introduce el nombre del departamento: ");
 			String nombreDep = IO.readString();
-			
+
 			System.out.println("Asignarlo como jefe? Y/N ");
 			yn = IO.readString();
 			if (yn.equalsIgnoreCase("y")) {
 				Departamento d = new Departamento(nombreDep, e);
-				
-				boolean added = gestion.add(d, e);
-				
-				System.out.println(added ? "departamento added" : "not added");
-				
-				
+
 				e.setDepartamento(d);
+				boolean added = gestion.add(d, e);
+
+				System.out.println(added ? "departamento added" : "not added");
+
 				
+
 				added = gestion.update(e, d);
-				
+
 				System.out.println(added ? "empleado updated" : "not updated");
-			
+
 			}
 		} else {
 			System.out.println("Introduce el id del departamento: ");
 			Integer idDep = IO.readInt();
 			Departamento d1 = gestion.buscarDepartamento(idDep);
-			
+
 			e.setDepartamento(d1);
-			
-			
+
 		}
 	}
 
 	private static void addEmpleado(GestionSQL gestion) {
 		Empleado e;
 		Departamento d = null;
+		Double salario;
+		
 		System.out.println("Introduce nombre empleado: ");
 		String nombre = IO.readString();
 
 		System.out.println("Salario del empleado: ");
-		Double salario = IO.readDouble();
+		salario = IO.readDouble();
 
 		System.out.println("Add to existing Departamento ? ");
 		String yn = IO.readString();
@@ -164,23 +273,24 @@ public class Menu {
 			System.out.println("Introduce el id del departamento");
 			Integer idDep = IO.readInt();
 			d = gestion.buscarDepartamento(idDep);
-			
+
 			e = new Empleado(nombre, salario, d);
 			boolean added = gestion.add(e, d);
-			
+
 			System.out.println(added ? "Empleado added" : "Empleado not added");
 		} else {
-			e = new Empleado(nombre, salario, null);
-			
+			e = new Empleado(nombre, salario, d);
+
 			boolean added = gestion.add(e, d);
 			System.out.println(added ? "Empleado added" : "Empleado not added");
 		}
 	}
-			
 
-	private static void mostrar(GestionSQL gestion) {
+	private static void mostrarEmpleado(GestionSQL gestion) {
 		System.out.println(gestion.showEmpleado());
 	}
+
+	// -------------------------- Empleado -------------------------------------
 
 	private static int menuDep() {
 		int opcion;
