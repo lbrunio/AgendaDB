@@ -57,7 +57,7 @@ public class Menu {
 				opEmple = menuEmple();
 				switch (opEmple) {
 				case 1:
-					addEmpleado(gestion, departamentos);
+					addEmpleado(gestion);
 					break;
 
 				case 2:
@@ -73,6 +73,11 @@ public class Menu {
 
 			case 2:
 				opDep = menuDep();
+				switch(opDep) {
+				case 2:
+					mostrarDepartamentos(gestion);
+					break;
+				}
 				break;
 				
 				
@@ -83,11 +88,16 @@ public class Menu {
 		}
 
 	}
+	
+	
+	private static void mostrarDepartamentos(GestionSQL gestion) {
+		System.out.println(gestion.showDepartamento());
+	}
 
 	private static void updateEmpleado(GestionSQL gestion) {
 		System.out.println("Introduce el id del empleado: ");
 		Integer idEmpleado = IO.readInt();
-		Empleado e = gestion.buscarPorCodigoEmple(idEmpleado);
+		Empleado e = gestion.buscarEmpleado(idEmpleado);
 
 		System.out.println("Cambiar el nombre " + e.getNombre() + " por? ");
 		String updateNombre = IO.readString();
@@ -101,11 +111,7 @@ public class Menu {
 		if (!updateSalario.isNaN()) {
 			e.setSalario(updateSalario);
 		}
-		
-//		e.setDepartamento(null);
-//		boolean added = gestion.update(e);
-		
-//		System.out.println(added ? "Added" : "Not added");
+	
 
 		System.out.println("Asignar a un nuevo departamento ? Y/N ");
 		String yn = IO.readString();
@@ -119,7 +125,7 @@ public class Menu {
 			if (yn.equalsIgnoreCase("y")) {
 				Departamento d = new Departamento(nombreDep, e);
 				
-				boolean added = gestion.add(d);
+				boolean added = gestion.add(d, e);
 				
 				System.out.println(added ? "departamento added" : "not added");
 				
@@ -142,7 +148,9 @@ public class Menu {
 		}
 	}
 
-	private static void addEmpleado(GestionSQL gestion, List<Departamento> departamentos) {
+	private static void addEmpleado(GestionSQL gestion) {
+		Empleado e;
+		Departamento d = null;
 		System.out.println("Introduce nombre empleado: ");
 		String nombre = IO.readString();
 
@@ -155,21 +163,20 @@ public class Menu {
 		if (yn.equalsIgnoreCase("Y")) {
 			System.out.println("Introduce el id del departamento");
 			Integer idDep = IO.readInt();
-			boolean found = false;
-			for (Departamento departamento : departamentos) {
-				if (departamento.getId() == idDep) {
-					gestion.add(new Empleado(nombre, salario, departamento));
-					found = true;
-					break; // Salir del bucle una vez que se ha encontrado el departamento
-				}
-			}
-			if (!found) {
-				gestion.add(new Empleado(nombre, salario, null));
-			}
+			d = gestion.buscarDepartamento(idDep);
+			
+			e = new Empleado(nombre, salario, d);
+			boolean added = gestion.add(e, d);
+			
+			System.out.println(added ? "Empleado added" : "Empleado not added");
 		} else {
-			gestion.add(new Empleado(nombre, salario, null));
+			e = new Empleado(nombre, salario, null);
+			
+			boolean added = gestion.add(e, d);
+			System.out.println(added ? "Empleado added" : "Empleado not added");
 		}
 	}
+			
 
 	private static void mostrar(GestionSQL gestion) {
 		System.out.println(gestion.showEmpleado());

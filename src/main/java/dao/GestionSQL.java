@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 import model.Departamento;
 import model.Empleado;
@@ -46,9 +47,7 @@ public class GestionSQL {
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	        // Manejar la excepción adecuadamente
 	        e.printStackTrace();
-	        // También podrías devolver un mensaje de error o lanzar una excepción para manejarla en otro lugar
 	    }
 	    return "";
 	}
@@ -63,7 +62,6 @@ public class GestionSQL {
 	            return rs.getString("nombre");
 	        }
 	    } catch (SQLException e) {
-	        // Manejar la excepción adecuadamente
 	        e.printStackTrace();
 	    }
 	    return null;
@@ -97,9 +95,9 @@ public class GestionSQL {
 	        }
 	        return sb.toString();
 	    } catch (SQLException e) {
-	        // Manejar la excepción adecuadamente, por ejemplo, registrándola o notificándola
+	       
 	        e.printStackTrace();
-	        // También podrías devolver un mensaje de error o lanzar una excepción para manejarla en otro lugar
+	        
 	    }
 	    return "";
 	}
@@ -162,15 +160,20 @@ public class GestionSQL {
 	 }
 	
 	
-	public boolean add(Empleado empleado) {
+	public boolean add(Empleado empleado, Departamento d) {
 	    String sql = """
-	            INSERT INTO Empleado (nombre, salario)
-	            VALUES (?, ?)
+	            INSERT INTO Empleado (nombre, salario, departamento)
+	            VALUES (?, ?, ?)
 	            """;
 	    try {
 	        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 	        ps.setString(1, empleado.getNombre());
 	        ps.setDouble(2, empleado.getSalario());
+	        if (d != null) {
+	            ps.setInt(3, d.getId());
+	        } else {
+	            ps.setNull(3, Types.INTEGER);
+	        }
 	        
 	        if (ps.executeUpdate() > 0) {
 	            ResultSet generatedKeys = ps.getGeneratedKeys();
@@ -210,14 +213,15 @@ public class GestionSQL {
 
 
 	
-	public boolean add(Departamento departamento) {
+	public boolean add(Departamento departamento, Empleado jefe) {
 	    String sql = """
-	            INSERT INTO Departamento (nombre)
-	            VALUES (?)
+	            INSERT INTO Departamento (nombre, jefe)
+	            VALUES (?, ?)
 	            """;
 	    try {
 	        PreparedStatement ps = conn.prepareStatement(sql);
 	        ps.setString(1, departamento.getNombre());
+	        ps.setInt(2, jefe.getId());
 	        if (ps.executeUpdate() > 0) {
 	            ResultSet generatedKeys = ps.getGeneratedKeys();
 	            if (generatedKeys.next()) {
@@ -371,10 +375,10 @@ public class GestionSQL {
 	        int idDepartamento = rs.getInt("id_departamento");
 	        String nombre = rs.getString("nombre");
 	        int idJefe = rs.getInt("id_jefe"); // Asumiendo que el campo en la tabla es id_jefe
-	        Empleado jefe = new Empleado(); // Deberás recuperar el jefe de la base de datos
+	        Empleado jefe = new Empleado(); // recuperar el jefe de la base de datos
 	        return new Departamento(idDepartamento, nombre, jefe);
 	    } catch (SQLException e) {
-	        // Maneja la excepción adecuadamente
+	        
 	    }
 	    return null;
 	}
@@ -385,11 +389,11 @@ public class GestionSQL {
 	        String nombre = rs.getString("nombre");
 	        Double salario = rs.getDouble("salario");
 	        int idDepartamento = rs.getInt("departamento");
-	        // Puedes agregar más atributos según la estructura de tu tabla Empleado
-	        Departamento departamento = new Departamento(); // Deberás recuperar el departamento de la base de datos
+	       
+	        Departamento departamento = new Departamento(); 
 	        return new Empleado(idEmpleado, nombre, salario, departamento);
 	    } catch (SQLException e) {
-	        // Maneja la excepción adecuadamente
+	        
 	    }
 	    return null;
 	}
@@ -425,7 +429,7 @@ public class GestionSQL {
 					               CREATE TABLE IF NOT EXISTS Departamento (
 						id_dep INT AUTO_INCREMENT PRIMARY KEY,
 						nombre VARCHAR(255),
-						jefe INT,
+						jefe INT NULL,
 						FOREIGN KEY (jefe) REFERENCES Empleado(id_emple) ON DELETE SET NULL
 						);
 
@@ -433,7 +437,7 @@ public class GestionSQL {
 						id_emple INT AUTO_INCREMENT PRIMARY KEY,
 						nombre VARCHAR(255),
 						salario DECIMAL(10, 2),
-						departamento INT,
+						departamento INT NULL,
 						FOREIGN KEY (departamento) REFERENCES Departamento(id_dep) ON DELETE SET NULL
 						);
 					               """;
