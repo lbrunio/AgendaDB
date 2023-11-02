@@ -248,6 +248,11 @@ public class Menu {
 		}
 	}
 
+	
+	/** Add Empleado 
+	 * 
+	 * @param gestion database
+	 */
 	private static void addEmpleado(GestionSQL gestion) {
 		Empleado e;
 		Departamento d = null;
@@ -279,6 +284,10 @@ public class Menu {
 		}
 	}
 
+	/** Mostrar todos los empleados
+	 * 
+	 * @param gestion database
+	 */
 	private static void mostrarEmpleado(GestionSQL gestion) {
 		System.out.println(gestion.showEmpleado());
 	}

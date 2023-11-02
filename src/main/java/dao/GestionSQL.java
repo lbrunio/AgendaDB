@@ -24,6 +24,10 @@ public class GestionSQL {
 
 	// -------------------------- Empleado -------------------------------------
 
+	/** Mostrar empleados
+	 * 
+	 * @return "" or empleado.toString
+	 */
 	public String showEmpleado() {
 		String sql = """
 				SELECT id_emple, nombre, salario, departamento
@@ -47,6 +51,11 @@ public class GestionSQL {
 		return "";
 	}
 
+	/** Buscar el empleado por id
+	 * 
+	 * @param id del empleado
+	 * @return null or Empleado
+	 */
 	public Empleado buscarEmpleado(Integer id) {
 		String sql = """
 				SELECT id_emple, nombre, salario, departamento
@@ -66,7 +75,13 @@ public class GestionSQL {
 		return null;
 	}
 
-	public boolean add(Empleado empleado, Departamento d) {
+	/** Add empleado
+	 * 
+	 * @param empleado empleado	
+	 * @param departamento departamento
+	 * @return false if ps.executeUpdate < 0 else true
+	 */
+	public boolean add(Empleado empleado, Departamento departamento) {
 		String sql = """
 				INSERT INTO Empleado (nombre, salario, departamento)
 				VALUES (?, ?, ?)
@@ -74,14 +89,20 @@ public class GestionSQL {
 		try {
 			
 			PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			ResultSet generatedKeys = ps.getGeneratedKeys();
 			ps.setString(1, empleado.getNombre());
 			ps.setDouble(2, empleado.getSalario());
-			d.setId(generatedKeys.getInt(1));
-			ps.setInt(3, d.getId());
-			
+			if (departamento != null) {
+				ps.setInt(3, departamento.getId());
+			} else {
+				ps.setNull(3, Types.INTEGER);
+			}
 
-		
+			if (ps.executeUpdate() > 0) {
+				ResultSet generatedKeys = ps.getGeneratedKeys();
+				if (generatedKeys.next()) {
+					departamento.setId(generatedKeys.getInt(1));
+				}
+			}
 			return ps.executeUpdate() > 0;
 		} catch (SQLException e) {
 
@@ -90,6 +111,11 @@ public class GestionSQL {
 	}
 
 
+	/** Borrar empleado
+	 * 
+	 * @param id empleado
+	 * @return false if ps.executeUpdate < 0 else true
+	 */
 	public boolean deleteEmpleado(Integer id) {
 		String sql = """
 				DELETE FROM Empleado
@@ -104,7 +130,13 @@ public class GestionSQL {
 		return false;
 	}
 
-	public boolean update(Empleado empleado, Departamento d) {
+	/** Actualizar empleado
+	 * 
+	 * @param empleado empleado
+	 * @param departamento departamento
+	 * @return false if empleado not updated else true
+	 */
+	public boolean update(Empleado empleado, Departamento departamento) {
 		String sql = """
 				UPDATE Empleado
 				SET nombre = ?, salario = ?, departamento = ?
@@ -114,7 +146,7 @@ public class GestionSQL {
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, empleado.getNombre());
 			ps.setDouble(2, empleado.getSalario());
-			ps.setInt(3, d.getId());
+			ps.setInt(3, departamento.getId());
 			ps.setInt(4, empleado.getId());
 			return ps.executeUpdate() > 0;
 		} catch (SQLException e) {
@@ -122,6 +154,11 @@ public class GestionSQL {
 		return false;
 	}
 
+	/** Leer empleado
+	 * 
+	 * @param rs ResultSet
+	 * @return null or new Empleado
+	 */
 	private Empleado readEmpleado(ResultSet rs) {
 		try {
 			int idEmpleado = rs.getInt("id_emple");
@@ -141,6 +178,11 @@ public class GestionSQL {
 	// ---------------------Empleado--------------------------------------
 
 	// ---------------------Departamento----------------------------------
+	
+	/** Mostrar todos los departamentos
+	 * 
+	 * @return "" or departamento.toString
+	 */
 	public String showDepartamento() {
 		String sql = """
 				SELECT id_dep, nombre, jefe
@@ -162,6 +204,11 @@ public class GestionSQL {
 		return "";
 	}
 
+	/** Buscar departamento por id
+	 * 
+	 * @param id departamento
+	 * @return false si no lo encuentra else true
+	 */
 	public Departamento buscarDepartamento(Integer id) {
 		String sql = """
 				SELECT id_dep, nombre, jefe
@@ -181,6 +228,12 @@ public class GestionSQL {
 		return null;
 	}
 
+	/** Add departamento 
+	 * 
+	 * @param departamento departamento
+	 * @param jefe empleado
+	 * @return false si no ha sido added else true
+	 */
 	public boolean add(Departamento departamento, Empleado jefe) {
 		String sql = """
 				INSERT INTO Departamento (nombre, jefe)
@@ -207,24 +260,12 @@ public class GestionSQL {
 		return false;
 	}
 
-	public Departamento buscarPorCodigoDep(Integer id) {
-		String sql = """
-				SELECT id_dep
-				FROM Departamento
-				WHERE id_dep = ?
-				""";
-		try {
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setInt(1, id);
-			ResultSet rs = ps.executeQuery();
-			if (rs.next()) {
-				return readDepartamento(rs);
-			}
-		} catch (SQLException e) {
-		}
-		return null;
-	}
-
+	/** Actualizar empleado
+	 * 
+	 * @param departamento departamento
+	 * @param empleado empleado
+	 * @return false si no ha sido actualizado else true
+	 */
 	public boolean update(Departamento departamento, Empleado empleado) {
 		String sql = """
 				UPDATE Departamento
@@ -242,6 +283,11 @@ public class GestionSQL {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param id departamento
+	 * @return false si no ha borrado else true
+	 */
 	public boolean deleteDepartamento(Integer id) {
 		String sql = """
 				DELETE FROM Departamento
@@ -256,9 +302,12 @@ public class GestionSQL {
 		return false;
 	}
 
+	/**
+	 *  Eliminar todos los valores de la tabla departamento
+	 */
 	public void dropDepartamento() {
 		String sql = """
-				DROP TABLE Departamento;
+				DELETE FROM Departamento
 				""";
 		try {
 			Statement stmt = conn.createStatement();
@@ -267,9 +316,12 @@ public class GestionSQL {
 		}
 	}
 
+	/**
+	 * Eliminar todos los valores de la tabla empleado
+	 */
 	public void dropEmpleado() {
 		String sql = """
-				DROP TABLE Empleado;
+				DELETE FROM Empleado
 				""";
 		try {
 			Statement stmt = conn.createStatement();
@@ -278,6 +330,11 @@ public class GestionSQL {
 		}
 	}
 
+	/**
+	 * 
+	 * @param rs ResultSet
+	 * @return null si no hay departamento else return new Departamento
+	 */
 	private Departamento readDepartamento(ResultSet rs) {
 		try {
 			int idDepartamento = rs.getInt("id_dep");
@@ -293,6 +350,9 @@ public class GestionSQL {
 	}
 
 	// ---------------------Departamento-------------------------------
+	/**
+	 *  Crear las tablas
+	 */
 	private void createTables() {
 		String sql = null;
 
