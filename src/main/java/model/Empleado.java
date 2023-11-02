@@ -27,7 +27,7 @@ public class Empleado {
 	
 
 
-	public Empleado(Integer idEmpleado, String nombre, Double salario2, Departamento departamento) {
+	public Empleado(Integer idEmpleado, String nombre, Double salario, Departamento departamento) {
 		this.idEmple = idEmpleado;
 		this.nombreEmple = nombre;
 		this.salario = salario;

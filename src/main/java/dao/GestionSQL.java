@@ -84,10 +84,10 @@ public class GestionSQL {
 			if (ps.executeUpdate() > 0) {
 				ResultSet generatedKeys = ps.getGeneratedKeys();
 				if (generatedKeys.next()) {
-					empleado.setId(generatedKeys.getInt(1));
+					d.setId(generatedKeys.getInt(1));
 				}
-				return ps.executeUpdate() > 0;
 			}
+			return ps.executeUpdate() > 0;
 		} catch (SQLException e) {
 
 		}

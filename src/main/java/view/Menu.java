@@ -17,7 +17,7 @@ public class Menu {
 //		gestion.dropEmpleado();
 //		gestion.dropDepartamento();
 //		System.exit(0);
-//		
+		
 //		gestion.insertDepValues();
 //		gestion.insertDepValues1();
 //		gestion.insertDepValues2();
@@ -266,7 +266,7 @@ public class Menu {
 		System.out.println("Salario del empleado: ");
 		salario = IO.readDouble();
 
-		System.out.println("Add to existing Departamento ? ");
+		System.out.println("Add to existing Departamento ? Y/N");
 		String yn = IO.readString();
 
 		if (yn.equalsIgnoreCase("Y")) {
