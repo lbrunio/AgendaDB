@@ -72,21 +72,16 @@ public class GestionSQL {
 				VALUES (?, ?, ?)
 				""";
 		try {
+			
 			PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			ResultSet generatedKeys = ps.getGeneratedKeys();
 			ps.setString(1, empleado.getNombre());
 			ps.setDouble(2, empleado.getSalario());
-			if (d != null) {
-				ps.setInt(3, d.getId());
-			} else {
-				ps.setNull(3, Types.INTEGER);
-			}
+			d.setId(generatedKeys.getInt(1));
+			ps.setInt(3, d.getId());
+			
 
-			if (ps.executeUpdate() > 0) {
-				ResultSet generatedKeys = ps.getGeneratedKeys();
-				if (generatedKeys.next()) {
-					d.setId(generatedKeys.getInt(1));
-				}
-			}
+		
 			return ps.executeUpdate() > 0;
 		} catch (SQLException e) {
 

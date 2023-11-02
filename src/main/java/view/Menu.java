@@ -18,13 +18,6 @@ public class Menu {
 //		gestion.dropDepartamento();
 //		System.exit(0);
 		
-//		gestion.insertDepValues();
-//		gestion.insertDepValues1();
-//		gestion.insertDepValues2();
-//		gestion.insertEmpleValues();
-//		gestion.insertEmpleValues1();
-//		gestion.insertEmpleValues2();
-//		System.exit(0);
 
 	
 
